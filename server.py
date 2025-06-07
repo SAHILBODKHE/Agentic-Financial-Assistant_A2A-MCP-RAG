@@ -1,6 +1,6 @@
 from mcp.server.fastmcp import FastMCP
 
-mcp = FastMCP("BankChatService", port=3005)  # pass port here
+mcp = FastMCP("BankChatService", port=3007)  # pass port here
 
 @mcp.tool()
 async def check_balance(account_id: str) -> dict:
@@ -29,6 +29,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    print(f"Starting Bank Chatbot Service on port 3005 with {args.connection_type} connection")
+    print(f"Starting Bank Chatbot Service on port 3007 with {args.connection_type} connection")
 
     mcp.run(args.connection_type)  # no host or port here

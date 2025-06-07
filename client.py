@@ -1,19 +1,27 @@
-# pip install llama-index llama-index-llms-ollama llama-index-tools-mcp langchain-community
 import asyncio
-import sys
 import os
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from llama_index.tools.mcp import BasicMCPClient, McpToolSpec
 from llama_index.core.agent.workflow import ReActAgent
 from llama_index.llms.ollama import Ollama
-from prompt_templates import BANK_CHATBOT_PROMPT  # You will define this
+from prompt_templates import BANK_CHATBOT_PROMPT
 
-# Configuration variables
-MCP_URL = os.environ.get("MCP_URL", "http://127.0.0.1:3005/sse")
+# Configuration
+MCP_URL = os.environ.get("MCP_URL", "http://127.0.0.1:3007/sse")
 MODEL_NAME = os.environ.get("LLM_MODEL", "llama3.2")
 TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", "0.7"))
 
-async def setup_agent():
-    """Setup and return the bank assistant agent"""
+# FastAPI app
+app = FastAPI()
+agent = None
+
+class Query(BaseModel):
+    query: str
+
+@app.on_event("startup")
+async def initialize_agent():
+    global agent
     try:
         print(f"🔌 Connecting to MCP server at {MCP_URL}")
         mcp_client = BasicMCPClient(MCP_URL)
@@ -22,70 +30,60 @@ async def setup_agent():
         tools = await McpToolSpec(client=mcp_client).to_tool_list_async()
         print(f"🛠️ Found {len(tools)} tools")
 
-        print(f"🧠 Initializing Ollama with model {MODEL_NAME}...")
-        llm = Ollama(model=MODEL_NAME, temperature=TEMPERATURE)
+        print(f"🧠 Initializing Ollama with model '{MODEL_NAME}'...")
+        llm = Ollama(model=MODEL_NAME, temperature=TEMPERATURE, stream=False)
 
-        # system_prompt = BANK_CHATBOT_PROMPT.template.replace("{tools}", "").replace("{tool_names}", "").replace("{input}", "")
-        # agent = ReActAgent(
-        #     name="BankBot",
-        #     llm=llm,
-        #     tools=tools,
-        #     system_prompt=system_prompt,
-        #     temperature=TEMPERATURE
-        # )
-        system_prompt = BANK_CHATBOT_PROMPT.template.replace("{tools}", "").replace("{tool_names}", "").replace("{input}", "")
+        # Inject tool names into the prompt
+        tool_names = ", ".join([tool.metadata.name for tool in tools])
+        system_prompt = BANK_CHATBOT_PROMPT.template \
+            .replace("{tool_names}", tool_names) \
+            .replace("{input}", "")  # {input} will be passed at runtime
+
         agent = ReActAgent(
             name="BankBot",
             llm=llm,
             tools=tools,
             system_prompt=system_prompt,
-            temperature=TEMPERATURE
+            temperature=TEMPERATURE,
+            stream=False
         )
-
-        return agent
+        print("✅ BankBot agent initialized.")
     except Exception as e:
-        print(f"❌ Error setting up agent: {e}")
+        print(f"❌ Error during agent setup: {e}")
         raise
 
-async def main():
-    print("\n🏦 Welcome to the AI Bank Assistant 🏦")
-    print("-" * 50)
-    print("Ask me anything about your bank accounts!")
-    print("Examples:")
-    print("  • What's my account balance?")
-    print("  • Transfer $200 to John")
-    print("  • Show me recent transactions")
-    print("\nType 'exit' or 'quit' to end the session.")
-    print("-" * 50)
+@app.get("/ping")
+async def ping():
+    return {"status": "BankBot is alive"}
 
-    print("✅ Make sure the bank MCP server is running with:")
-    print("mcp-bank-chatbot --connection_type http")
-
+@app.post("/ask")
+async def ask_query(data: Query):
+    print(f"📨 Incoming query: {data.query}")
     try:
-        agent = await setup_agent()
-        print("💼 BankBot is ready to assist you!")
+        if not agent:
+            raise HTTPException(status_code=503, detail="Agent not initialized")
 
-        while True:
-            user_query = input("\n🧾 Your request: ")
+        trimmed_input = data.query.strip()[:1000]
+        response = await agent.run(trimmed_input)
 
-            if user_query.lower() in ['exit', 'quit', 'q']:
-                print("\n👋 Thank you for using the Bank Assistant. Goodbye!")
-                break
+        # 🧼 Step: Clean up internal thoughts if any
+        final = str(response).strip()
+        if final.lower().startswith("thought:") or "thought:" in final.lower():
+            # Simple heuristic cleanup
+            import re
+            clean_msg = re.sub(r"(?i)thought:.*?(observation:)?", "", final)
+            clean_msg = clean_msg.strip().lstrip(":").strip()
+            if not clean_msg:
+                clean_msg = "✅ Your account balance is ready. Please check your dashboard."
+            return {"response": clean_msg}
 
-            if user_query.strip():
-                print("🕵️ Processing your request...")
-                try:
-                    response = await agent.run(user_query)
-                    print(f"\n📣 {response}")
-                except Exception as e:
-                    print(f"⚠️ Error processing query: {e}")
+        return {"response": final}
 
     except Exception as e:
-        print(f"🚨 Error: {e}")
-        print(f"Ensure the bank MCP server is running at {MCP_URL}")
-        return 1
+        print(f"🛑 Error processing query: {e}")
+        raise HTTPException(status_code=500, detail=f"Agent error: {str(e)}")
 
-    return 0
 
 if __name__ == "__main__":
-    sys.exit(asyncio.run(main()))
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=4000, reload=True)

@@ -3,6 +3,6 @@ Run LLAMA using :
 
 ollama run llama3.2
 
-uvicorn server.main:app --reload --port 8000
+python server.py --connection_type sse
 
-python3 client.py
+uvicorn client:app --port 4000

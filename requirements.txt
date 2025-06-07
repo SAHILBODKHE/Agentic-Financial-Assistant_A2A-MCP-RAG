@@ -1,4 +1,10 @@
 llama-index
 llama-index-llms-ollama
 llama-index-tools-mcp
-langchain-community 
+langchain-community
+
+fastapi
+uvicorn[standard]
+
+# Optional (if needed for async requests or debugging)
+httpx
