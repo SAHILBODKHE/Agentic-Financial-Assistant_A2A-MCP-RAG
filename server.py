@@ -1,5 +1,6 @@
 from mcp.server.fastmcp import FastMCP
-
+from retriever import get_relevant_documents
+from llama_model import ask_ollama
 mcp = FastMCP("BankChatService", port=3007)  # pass port here
 
 @mcp.tool()
@@ -16,6 +17,24 @@ async def transaction_history(account_id: str, start_date: str, end_date: str) -
         {"date": "2025-05-01", "amount": "-$100", "desc": "Grocery"},
         {"date": "2025-17-05", "amount": "+$500", "desc": "Salary"},
     ]}
+
+@mcp.tool()
+async def insurance_question(query):
+    docs = get_relevant_documents(query)
+    context = "\n\n".join([doc.page_content for doc in docs])
+    
+    prompt = f"""
+    You are a helpful insurance assistant. Use the context below to answer the user's question based strictly on
+
+    Context:
+    {context}
+
+    Question: {query}
+    Answer:
+    """
+    response = ask_ollama(prompt.strip())
+    print("\n💬 Answer:", response)
+    return response
 
 if __name__ == "__main__":
     import argparse

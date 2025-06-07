@@ -35,15 +35,15 @@ async def initialize_agent():
 
         # Inject tool names into the prompt
         tool_names = ", ".join([tool.metadata.name for tool in tools])
-        system_prompt = BANK_CHATBOT_PROMPT.template \
-            .replace("{tool_names}", tool_names) \
-            .replace("{input}", "")  # {input} will be passed at runtime
+        # system_prompt = BANK_CHATBOT_PROMPT.template \
+        #     .replace("{tool_names}", tool_names) \
+        #     .replace("{input}", "")  # {input} will be passed at runtime
 
         agent = ReActAgent(
             name="BankBot",
             llm=llm,
             tools=tools,
-            system_prompt=system_prompt,
+            # system_prompt=system_prompt,
             temperature=TEMPERATURE,
             stream=False
         )
