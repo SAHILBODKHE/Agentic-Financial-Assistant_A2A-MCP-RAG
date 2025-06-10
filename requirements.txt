@@ -20,5 +20,5 @@ python-multipart
 jinja2
 requests
 scikit-learn>=1.4.0
-
+langgraph
 numpy==1.26.4

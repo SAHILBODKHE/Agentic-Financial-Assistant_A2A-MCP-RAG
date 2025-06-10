@@ -6,6 +6,7 @@ from llama_index.tools.mcp import BasicMCPClient, McpToolSpec
 from llama_index.core.agent.workflow import ReActAgent
 from llama_index.llms.ollama import Ollama
 from prompt_templates import BANK_CHATBOT_PROMPT
+from fastapi.middleware.cors import CORSMiddleware
 
 # Configuration
 MCP_URL = os.environ.get("MCP_URL", "http://127.0.0.1:3007/sse")
@@ -14,7 +15,18 @@ TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", "0.7"))
 
 # FastAPI app
 app = FastAPI()
+
+# ✅ Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # or specify your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 agent = None
+
 
 class Query(BaseModel):
     query: str

@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shield Insurance - AI Assistant</title>
+    <style>
+        :root {
+            /* Light Theme (Default) */
+            --primary: #2ecc71;
+            --primary-dark: #27ae60;
+            --background: #f5f7fa;
+            --surface: #ffffff;
+            --surface-light: #f8f9fa;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --error: #e74c3c;
+            --sidebar-bg: #34495e;
+            --sidebar-text: #ecf0f1;
+            --sidebar-active: #2ecc71;
+            --chat-header-bg: #ffffff;
+            --message-user-bg: #2ecc71;
+            --message-user-text: #ffffff;
+            --message-bot-bg: #ecf0f1;
+            --message-bot-text: #2c3e50;
+            --input-bg: #ffffff;
+            --input-text: #2c3e50;
+            --quick-reply-bg: #ecf0f1;
+            --quick-reply-text: #2c3e50;
+            --quick-reply-hover: #2ecc71;
+            --quick-reply-hover-text: #ffffff;
+        }
+
+        .dark-mode {
+            /* Dark Theme */
+            --primary: #2ecc71;
+            --primary-dark: #27ae60;
+            --background: #121212;
+            --surface: #1e1e1e;
+            --surface-light: #2a2a2a;
+            --text-primary: #ecf0f1;
+            --text-secondary: #b0b0b0;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --error: #e74c3c;
+            --sidebar-bg: #1a1a1a;
+            --sidebar-text: #ecf0f1;
+            --sidebar-active: #2ecc71;
+            --chat-header-bg: #1e1e1e;
+            --message-user-bg: #2ecc71;
+            --message-user-text: #000000;
+            --message-bot-bg: #2a2a2a;
+            --message-bot-text: #ecf0f1;
+            --input-bg: #2a2a2a;
+            --input-text: #ecf0f1;
+            --quick-reply-bg: #2a2a2a;
+            --quick-reply-text: #ecf0f1;
+            --quick-reply-hover: #2ecc71;
+            --quick-reply-hover-text: #000000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: var(--surface);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .logo-text span {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            color: var(--primary);
+            transform: rotate(20deg);
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 300px;
+            background-color: var(--sidebar-bg);
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-title {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .menu-item {
+            padding: 0.8rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            transition: all 0.3s;
+            color: var(--sidebar-text);
+        }
+
+        .menu-item i {
+            width: 24px;
+            text-align: center;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-item.active {
+            background-color: var(--sidebar-active);
+            color: white;
+            font-weight: 500;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--surface-light);
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 1.5rem;
+            background-color: var(--chat-header-bg);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .dark-mode .chat-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .chat-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .chat-status {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            background-color: var(--surface-light);
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            line-height: 1.5;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--message-user-bg);
+            color: var(--message-user-text);
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background-color: var(--message-bot-bg);
+            color: var(--message-bot-text);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .chat-input-container {
+            padding: 1rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            background-color: var(--surface-light);
+        }
+
+        .dark-mode .chat-input-container {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 0.8rem 1.2rem;
+            border-radius: 24px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            font-size: 1rem;
+            outline: none;
+            resize: none;
+            max-height: 120px;
+            min-height: 48px;
+        }
+
+        .dark-mode .chat-input {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .send-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .send-button:hover {
+            background-color: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        .send-button i {
+            font-size: 1.2rem;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 1rem 1.2rem;
+            align-self: flex-start;
+            background-color: var(--message-bot-bg);
+            border-radius: 12px;
+            border-bottom-left-radius: 4px;
+            margin-bottom: -0.5rem;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-secondary);
+            border-radius: 50%;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .quick-replies {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .quick-reply {
+            padding: 0.5rem 1rem;
+            background-color: var(--quick-reply-bg);
+            color: var(--quick-reply-text);
+            border-radius: 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .quick-reply:hover {
+            background-color: var(--quick-reply-hover);
+            color: var(--quick-reply-hover-text);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 80px;
+                padding: 1rem 0.5rem;
+            }
+            .menu-item span {
+                display: none;
+            }
+            .menu-item {
+                justify-content: center;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="light-mode">
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon">S</div>
+            <div class="logo-text">SHIELD<span>Insurance</span></div>
+        </div>
+        <div class="nav-links">
+            <a href="#" class="nav-link">Home</a>
+            <a href="#" class="nav-link">Policies</a>
+            <a href="#" class="nav-link">Claims</a>
+            <a href="#" class="nav-link">Support</a>
+            <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <h3 class="sidebar-title">Menu</h3>
+            <ul class="sidebar-menu">
+                <li class="menu-item active">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>AI Assistant</span>
+                </li>
+                <li class="menu-item">
+                    <i class="fas fa-file-contract"></i>
+                    <span>My Policies</span>
+                </li>
+                <li class="menu-item">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    <span>Claims</span>
+                </li>
+                <li class="menu-item">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Coverage</span>
+                </li>
+                <li class="menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-avatar">AI</div>
+                <div>
+                    <div class="chat-title">Shield AI Assistant</div>
+                    <div class="chat-status">Online</div>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot-message">
+                    Hello! I'm your Shield Insurance AI assistant. How can I help you with your insurance needs today?
+                    <div class="message-time">Today, 10:00 AM</div>
+                </div>
+                
+                <div class="quick-replies" id="quick-replies">
+                    <button class="quick-reply" onclick="sendQuickReply(this)">I need to file a claim</button>
+                    <button class="quick-reply" onclick="sendQuickReply(this)">What's my policy coverage?</button>
+                    <button class="quick-reply" onclick="sendQuickReply(this)">I want to renew my policy</button>
+                    <button class="quick-reply" onclick="sendQuickReply(this)">Help with a payment</button>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <textarea class="chat-input" id="chat-input" placeholder="Type your message here..." rows="1"></textarea>
+                    <button class="send-button" id="send-button" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const sendButton = document.getElementById('send-button');
+        const quickReplies = document.getElementById('quick-replies');
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+
+        // Check for saved theme preference or use preferred color scheme
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            enableDarkMode();
+        }
+
+        // Theme toggle functionality
+        themeToggle.addEventListener('click', toggleTheme);
+
+        function toggleTheme() {
+            if (body.classList.contains('dark-mode')) {
+                disableDarkMode();
+            } else {
+                enableDarkMode();
+            }
+        }
+
+        function enableDarkMode() {
+            body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            themeToggle.setAttribute('title', 'Toggle light mode');
+        }
+
+        function disableDarkMode() {
+            body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+            themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            themeToggle.setAttribute('title', 'Toggle dark mode');
+        }
+
+        // Auto-resize textarea
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Send message on Enter key (but allow Shift+Enter for new line)
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Function to send a message
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (message === '') return;
+
+            // Add user message to chat
+            addMessage(message, 'user');
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Hide quick replies after first message
+            quickReplies.style.display = 'none';
+
+            // Call API
+            fetch('http://localhost:4000/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove typing indicator
+                removeTypingIndicator();
+                
+                // Add bot response
+                if (data.response) {
+                    addMessage(data.response, 'bot');
+                } else {
+                    addMessage("I'm sorry, I couldn't process your request. Please try again later.", 'bot');
+                }
+            })
+            .catch(error => {
+                removeTypingIndicator();
+                addMessage("Sorry, there was an error connecting to the server. Please try again.", 'bot');
+                console.error('Error:', error);
+            });
+        }
+
+        // Function to send quick reply
+        function sendQuickReply(element) {
+            const message = element.textContent;
+            chatInput.value = message;
+            sendMessage();
+        }
+
+        // Function to add a message to the chat
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                ${text}
+                <div class="message-time">Today, ${time}</div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Function to show typing indicator
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Function to remove typing indicator
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Initial welcome message
+        setTimeout(() => {
+            addMessage("I can help you with policy information, claims, renewals, and any other insurance-related questions. What would you like to know?", 'bot');
+        }, 1500);
+    </script>
+</body>
+</html>
