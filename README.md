@@ -1,4 +1,7 @@
-# Bankbot
+
+
+# Bankbot![Screenshot 2025-06-10 at 11 00 45 PM](https://github.com/user-attachments/assets/9ca58d25-ad4f-4ddd-b8a1-2d28902a0c5f)
+
 Run LLAMA using :
 
 ollama run llama3.2
