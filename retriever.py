@@ -1,4 +1,4 @@
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 from embeddings import load_bge_model
 
 def get_relevant_documents(query, k=3):
