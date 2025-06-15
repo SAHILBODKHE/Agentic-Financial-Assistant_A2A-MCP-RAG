@@ -9,7 +9,7 @@ from prompt_templates import BANK_CHATBOT_PROMPT
 from fastapi.middleware.cors import CORSMiddleware
 
 # Configuration
-MCP_URL = os.environ.get("MCP_URL", "http://127.0.0.1:3007/sse")
+MCP_URL = os.environ.get("MCP_URL", "http://127.0.0.1:3009/sse")
 MODEL_NAME = os.environ.get("LLM_MODEL", "llama3.2")
 TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", "0.7"))
 
@@ -47,9 +47,9 @@ async def initialize_agent():
 
         # Inject tool names into the prompt
         tool_names = ", ".join([tool.metadata.name for tool in tools])
-        # system_prompt = BANK_CHATBOT_PROMPT.template \
-        #     .replace("{tool_names}", tool_names) \
-        #     .replace("{input}", "")  # {input} will be passed at runtime
+        system_prompt = BANK_CHATBOT_PROMPT.template \
+            .replace("{tool_names}", tool_names) \
+            .replace("{input}", "")  # {input} will be passed at runtime
 
         agent = ReActAgent(
             name="BankBot",
