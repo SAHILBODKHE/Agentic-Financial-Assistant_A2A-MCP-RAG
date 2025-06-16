@@ -1,4 +1,4 @@
-
+# ------------------ drafter1.py ------------------
 from typing import Annotated, Sequence, TypedDict
 from langchain_core.messages import BaseMessage, HumanMessage, ToolMessage, SystemMessage
 from langchain_core.tools import tool
@@ -20,15 +20,9 @@ class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
 
 # === Tools ===
-
 @tool
 def update(content: str) -> str:
-    """
-    Update the document with the provided content.
-    
-    Args:
-        content: The full text to replace the current document with.
-    """
+    """Update the document with the provided content."""
     global document_content
     document_content = content
     return (
@@ -38,12 +32,7 @@ def update(content: str) -> str:
 
 @tool
 def save(filename: str) -> str:
-    """
-    Save the current document to a text file.
-
-    Args:
-        filename: The name of the file to save (e.g., 'draft.txt').
-    """
+    """Save the current document to a text file."""
     global document_content
     if not filename.endswith(".txt"):
         filename += ".txt"
@@ -54,16 +43,18 @@ def save(filename: str) -> str:
     except Exception as e:
         return f"❌ Failed to save document: {str(e)}"
 
+
+# Tool list
 tools = [update, save]
 
-# === ChatOllama model ===
+# Chat model
 model = ChatOllama(
     model="llama3.2",
     temperature=0.7,
     base_url="http://localhost:11434"
 ).bind_tools(tools)
 
-# === LangGraph agent logic ===
+# Agent logic
 def our_agent(state: AgentState) -> AgentState:
     system_prompt = SystemMessage(content=f"""
 You are Drafter, a helpful assistant for writing and editing documents.
@@ -79,11 +70,11 @@ Current document:
 """)
 
     user_message = state["messages"][-1]
-    messages = [system_prompt] + list(state["messages"]) + [user_message]
+    messages = [system_prompt] + list(state["messages"])
     response = model.invoke(messages)
     return {"messages": state["messages"] + [user_message, response]}
 
-# === Control logic to end after each action ===
+# Conditional flow control
 def should_continue(state: AgentState) -> str:
     for msg in reversed(state["messages"]):
         if isinstance(msg, ToolMessage):
@@ -91,7 +82,7 @@ def should_continue(state: AgentState) -> str:
                 return "end"
     return "continue"
 
-# === LangGraph ===
+# Build graph
 graph = StateGraph(AgentState)
 graph.add_node("agent", our_agent)
 graph.add_node("tools", ToolNode(tools))
@@ -100,68 +91,37 @@ graph.add_edge("agent", "tools")
 graph.add_conditional_edges("tools", should_continue, {"continue": "agent", "end": END})
 app = graph.compile()
 
-# === Runner for one-shot interaction ===
-def run_drafter_session(user_input: str) -> dict:
-    """
-    Runs one LangGraph Drafter interaction step.
-
-    Args:
-        user_input: User's text instruction.
-
-    Returns:
-        {
-            "output": "<tool result>",
-            "status": "waiting" | "done" | "error"
-        }
-    """
+# Run one session
+def run_drafter_session(user_input: str, config: dict) -> dict:
     state = {"messages": [HumanMessage(content=user_input)]}
     result = ""
     is_done = False
+    for step in app.stream(state, config=config, stream_mode="values"):
+        for msg in step.get("messages", []):
+            if isinstance(msg, ToolMessage):
+                result = msg.content
+                if "saved" in result.lower() or "updated" in result.lower():
+                    is_done = True
+    return {
+        "output": result or "No output generated.",
+        "status": "done" if is_done else "waiting"
+    }
 
-    try:
-        for step in app.stream(state, stream_mode="values"):
-            for msg in step.get("messages", []):
-                if isinstance(msg, ToolMessage):
-                    result = msg.content
-                    if "saved" in result.lower() or "updated" in result.lower():
-                        is_done = True
-        return {
-            "output": result or "No output generated.",
-            "status": "done" if is_done else "waiting"
-        }
-    except Exception as e:
-        return {
-            "output": f"❌ Error running Drafter: {str(e)}",
-            "status": "error"
-        }
-
-# === MCP Tool (defensive wrapper) ===
+# MCP-compatible tool
 @mcp.tool()
-async def drafter_tool(input: dict) -> dict:
+async def drafter_tool(user_instruction: str, config: dict = None) -> dict:
     """
     MCP-compatible tool to run one round of the Drafter assistant.
-
-    Expects:
-        input: { "user_instruction": "<text>" }
-
-    Returns:
-        { "output": ..., "status": "waiting" | "done" | "error" }
     """
     try:
-        if not isinstance(input, dict) or "user_instruction" not in input:
-            return {
-                "output": "❌ Missing 'user_instruction' field in input.",
-                "status": "error"
-            }
-
-        user_instruction = input["user_instruction"]
         if not isinstance(user_instruction, str) or not user_instruction.strip():
             return {
                 "output": "❌ 'user_instruction' must be a non-empty string.",
                 "status": "error"
             }
 
-        return await run_in_threadpool(run_drafter_session, user_instruction)
+        config = config or {"configurable": {"thread_id": "default"}}
+        return await run_in_threadpool(run_drafter_session, user_instruction, config)
 
     except Exception as e:
         return {
@@ -169,17 +129,12 @@ async def drafter_tool(input: dict) -> dict:
             "status": "error"
         }
 
-# === Optional: Run standalone for local testing ===
+
+# Main entrypoint
 if __name__ == "__main__":
     import argparse
-
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--connection_type",
-        type=str,
-        default="sse",
-        choices=["http", "stdio", "sse"]
-    )
+    parser.add_argument("--connection_type", type=str, default="sse", choices=["http", "stdio", "sse"])
     args = parser.parse_args()
 
     print(f"🚀 DrafterService running on port 3009 via {args.connection_type}")

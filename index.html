@@ -500,147 +500,98 @@
 
     <script>
         // DOM elements
-        const chatInput = document.getElementById('chat-input');
-        const chatMessages = document.getElementById('chat-messages');
-        const sendButton = document.getElementById('send-button');
-        const quickReplies = document.getElementById('quick-replies');
-        const themeToggle = document.getElementById('theme-toggle');
-        const body = document.body;
+     // ------------------ frontend_chat.js ------------------
 
-        // Check for saved theme preference or use preferred color scheme
-        const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+// DOM elements
+const chatInput = document.getElementById('chat-input');
+const chatMessages = document.getElementById('chat-messages');
+const sendButton = document.getElementById('send-button');
+const quickReplies = document.getElementById('quick-replies');
 
-        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-            enableDarkMode();
+// Generate or load thread_id from localStorage
+let threadId = localStorage.getItem("draft_thread_id");
+if (!threadId) {
+    threadId = crypto.randomUUID();
+    localStorage.setItem("draft_thread_id", threadId);
+}
+
+// Send message to server
+function sendMessage() {
+    const message = chatInput.value.trim();
+    if (message === '') return;
+
+    addMessage(message, 'user');
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+    quickReplies.style.display = 'none';
+
+    showTypingIndicator();
+
+    fetch('http://localhost:4000/ask', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            query: message,
+            thread_id: threadId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        removeTypingIndicator();
+        if (data.response) {
+            addMessage(data.response, 'bot');
+        } else {
+            addMessage("Sorry, no response from server.", 'bot');
         }
+    })
+    .catch(err => {
+        removeTypingIndicator();
+        console.error('Fetch error:', err);
+        addMessage("❌ Error connecting to server.", 'bot');
+    });
+}
 
-        // Theme toggle functionality
-        themeToggle.addEventListener('click', toggleTheme);
+function sendQuickReply(element) {
+    const message = element.textContent;
+    chatInput.value = message;
+    sendMessage();
+}
 
-        function toggleTheme() {
-            if (body.classList.contains('dark-mode')) {
-                disableDarkMode();
-            } else {
-                enableDarkMode();
-            }
-        }
+function addMessage(text, sender) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}-message`;
 
-        function enableDarkMode() {
-            body.classList.add('dark-mode');
-            localStorage.setItem('theme', 'dark');
-            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-            themeToggle.setAttribute('title', 'Toggle light mode');
-        }
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-        function disableDarkMode() {
-            body.classList.remove('dark-mode');
-            localStorage.setItem('theme', 'light');
-            themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-            themeToggle.setAttribute('title', 'Toggle dark mode');
-        }
+    messageDiv.innerHTML = `
+        ${text}
+        <div class="message-time">Today, ${time}</div>
+    `;
 
-        // Auto-resize textarea
-        chatInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-        });
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
-        // Send message on Enter key (but allow Shift+Enter for new line)
-        chatInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
+function showTypingIndicator() {
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'typing-indicator';
+    typingDiv.id = 'typing-indicator';
+    typingDiv.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+    `;
+    chatMessages.appendChild(typingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
-        // Function to send a message
-        function sendMessage() {
-            const message = chatInput.value.trim();
-            if (message === '') return;
+function removeTypingIndicator() {
+    const typingIndicator = document.getElementById('typing-indicator');
+    if (typingIndicator) typingIndicator.remove();
+}
 
-            // Add user message to chat
-            addMessage(message, 'user');
-            chatInput.value = '';
-            chatInput.style.height = 'auto';
-
-            // Show typing indicator
-            showTypingIndicator();
-
-            // Hide quick replies after first message
-            quickReplies.style.display = 'none';
-
-            // Call API
-            fetch('http://localhost:4000/ask', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ query: message })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Remove typing indicator
-                removeTypingIndicator();
-                
-                // Add bot response
-                if (data.response) {
-                    addMessage(data.response, 'bot');
-                } else {
-                    addMessage("I'm sorry, I couldn't process your request. Please try again later.", 'bot');
-                }
-            })
-            .catch(error => {
-                removeTypingIndicator();
-                addMessage("Sorry, there was an error connecting to the server. Please try again.", 'bot');
-                console.error('Error:', error);
-            });
-        }
-
-        // Function to send quick reply
-        function sendQuickReply(element) {
-            const message = element.textContent;
-            chatInput.value = message;
-            sendMessage();
-        }
-
-        // Function to add a message to the chat
-        function addMessage(text, sender) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}-message`;
-            
-            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            messageDiv.innerHTML = `
-                ${text}
-                <div class="message-time">Today, ${time}</div>
-            `;
-            
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        // Function to show typing indicator
-        function showTypingIndicator() {
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'typing-indicator';
-            typingDiv.id = 'typing-indicator';
-            typingDiv.innerHTML = `
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-            `;
-            chatMessages.appendChild(typingDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        // Function to remove typing indicator
-        function removeTypingIndicator() {
-            const typingIndicator = document.getElementById('typing-indicator');
-            if (typingIndicator) {
-                typingIndicator.remove();
-            }
-        }
 
         // Initial welcome message
         setTimeout(() => {

@@ -1,3 +1,4 @@
+# ------------------ mcp_client_api.py ------------------
 import asyncio
 import os
 from fastapi import FastAPI, HTTPException
@@ -16,10 +17,10 @@ TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", "0.7"))
 # FastAPI app
 app = FastAPI()
 
-# ✅ Enable CORS
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # or specify your frontend URL
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,9 +28,10 @@ app.add_middleware(
 
 agent = None
 
-
+# Request body
 class Query(BaseModel):
     query: str
+    thread_id: str  # New field
 
 @app.on_event("startup")
 async def initialize_agent():
@@ -38,30 +40,30 @@ async def initialize_agent():
         print(f"🔌 Connecting to MCP server at {MCP_URL}")
         mcp_client = BasicMCPClient(MCP_URL)
 
-        print("🔍 Fetching available banking tools...")
+        print("🔍 Fetching available tools...")
         tools = await McpToolSpec(client=mcp_client).to_tool_list_async()
         print(f"🛠️ Found {len(tools)} tools")
 
         print(f"🧠 Initializing Ollama with model '{MODEL_NAME}'...")
         llm = Ollama(model=MODEL_NAME, temperature=TEMPERATURE, stream=False)
 
-        # Inject tool names into the prompt
+        # Prompt with placeholder injection (if needed)
         tool_names = ", ".join([tool.metadata.name for tool in tools])
         system_prompt = BANK_CHATBOT_PROMPT.template \
             .replace("{tool_names}", tool_names) \
-            .replace("{input}", "")  # {input} will be passed at runtime
+            .replace("{input}", "")
 
         agent = ReActAgent(
             name="BankBot",
             llm=llm,
             tools=tools,
-            # system_prompt=system_prompt,
             temperature=TEMPERATURE,
             stream=False
         )
-        print("✅ BankBot agent initialized.")
+
+        print("✅ Agent initialized.")
     except Exception as e:
-        print(f"❌ Error during agent setup: {e}")
+        print(f"❌ Error during setup: {e}")
         raise
 
 @app.get("/ping")
@@ -70,32 +72,28 @@ async def ping():
 
 @app.post("/ask")
 async def ask_query(data: Query):
-    print(f"📨 Incoming query: {data.query}")
+    print(f"📨 Incoming query: {data.query} (thread_id: {data.thread_id})")
     try:
-        if not agent:
-            raise HTTPException(status_code=503, detail="Agent not initialized")
+        mcp_client = BasicMCPClient(MCP_URL)
 
-        trimmed_input = data.query.strip()[:1000]
-        response = await agent.run(trimmed_input)
+        response = await mcp_client.call_tool(
+            "drafter_tool",
+            {"user_instruction": data.query},
+            {"configurable": {"thread_id": data.thread_id}}
+        )
 
-        # 🧼 Step: Clean up internal thoughts if any
-        final = str(response).strip()
-        if final.lower().startswith("thought:") or "thought:" in final.lower():
-            # Simple heuristic cleanup
-            import re
-            clean_msg = re.sub(r"(?i)thought:.*?(observation:)?", "", final)
-            clean_msg = clean_msg.strip().lstrip(":").strip()
-            if not clean_msg:
-                clean_msg = "✅ Your account balance is ready. Please check your dashboard."
-            return {"response": clean_msg}
+        print(f"🧾 MCP tool response: {response}")
+        print(f"🔎 Dir: {dir(response)}")
 
-        return {"response": final}
+        return {"response": str(response)}
 
     except Exception as e:
         print(f"🛑 Error processing query: {e}")
         raise HTTPException(status_code=500, detail=f"Agent error: {str(e)}")
 
 
+
+# Run standalone
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=4000, reload=True)
