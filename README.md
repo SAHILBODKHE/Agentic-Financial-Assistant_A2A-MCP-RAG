@@ -3,10 +3,10 @@ Run LLAMA using :
 
 ollama run llama3.2
 
-python server.py --connection_type sse
+python3 server.py --connection_type sse
 
-uvicorn client:app --port 4000
-
+uvicorn client1:app --port 4000
+python3 drafter1.py --connection_type sse
 
 Great — you've uploaded the full **CIBC Comprehensive Travel Insurance Plan PDF**, and you're looking to **test your RAG implementation** by asking questions from it.
 

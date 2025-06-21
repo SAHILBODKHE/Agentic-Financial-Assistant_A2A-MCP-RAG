@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shield Insurance - AI Assistant</title>
-    <style>
-        :root {
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shield Insurance - AI Assistant</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+   :root {
             /* Light Theme (Default) */
             --primary: #2ecc71;
             --primary-dark: #27ae60;
@@ -417,186 +418,194 @@
                 justify-content: center;
             }
         }
-    </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  </style>
 </head>
 <body class="light-mode">
-    <div class="header">
-        <div class="logo">
-            <div class="logo-icon">S</div>
-            <div class="logo-text">SHIELD<span>Insurance</span></div>
-        </div>
-        <div class="nav-links">
-            <a href="#" class="nav-link">Home</a>
-            <a href="#" class="nav-link">Policies</a>
-            <a href="#" class="nav-link">Claims</a>
-            <a href="#" class="nav-link">Support</a>
-            <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
-                <i class="fas fa-moon"></i>
-            </button>
-        </div>
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">S</div>
+      <div class="logo-text">SHIELD<span>Insurance</span></div>
+    </div>
+    <div class="nav-links">
+      <a href="#" class="nav-link">Home</a>
+      <a href="#" class="nav-link">Policies</a>
+      <a href="#" class="nav-link">Claims</a>
+      <a href="#" class="nav-link">Support</a>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
+        <i class="fas fa-moon"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="sidebar">
+      <h3 class="sidebar-title">Menu</h3>
+      <ul class="sidebar-menu">
+        <li class="menu-item active"><i class="fas fa-comment-dots"></i><span>AI Assistant</span></li>
+        <li class="menu-item"><i class="fas fa-file-contract"></i><span>My Policies</span></li>
+        <li class="menu-item"><i class="fas fa-hand-holding-usd"></i><span>Claims</span></li>
+        <li class="menu-item"><i class="fas fa-user-shield"></i><span>Coverage</span></li>
+        <li class="menu-item"><i class="fas fa-cog"></i><span>Settings</span></li>
+      </ul>
     </div>
 
-    <div class="main-container">
-        <div class="sidebar">
-            <h3 class="sidebar-title">Menu</h3>
-            <ul class="sidebar-menu">
-                <li class="menu-item active">
-                    <i class="fas fa-comment-dots"></i>
-                    <span>AI Assistant</span>
-                </li>
-                <li class="menu-item">
-                    <i class="fas fa-file-contract"></i>
-                    <span>My Policies</span>
-                </li>
-                <li class="menu-item">
-                    <i class="fas fa-hand-holding-usd"></i>
-                    <span>Claims</span>
-                </li>
-                <li class="menu-item">
-                    <i class="fas fa-user-shield"></i>
-                    <span>Coverage</span>
-                </li>
-                <li class="menu-item">
-                    <i class="fas fa-cog"></i>
-                    <span>Settings</span>
-                </li>
-            </ul>
+    <div class="chat-container">
+      <div class="chat-header">
+        <div class="chat-avatar">AI</div>
+        <div>
+          <div class="chat-title">Shield AI Assistant</div>
+          <div class="chat-status">Online</div>
         </div>
+      </div>
 
-        <div class="chat-container">
-            <div class="chat-header">
-                <div class="chat-avatar">AI</div>
-                <div>
-                    <div class="chat-title">Shield AI Assistant</div>
-                    <div class="chat-status">Online</div>
-                </div>
-            </div>
-
-            <div class="chat-messages" id="chat-messages">
-                <div class="message bot-message">
-                    Hello! I'm your Shield Insurance AI assistant. How can I help you with your insurance needs today?
-                    <div class="message-time">Today, 10:00 AM</div>
-                </div>
-                
-                <div class="quick-replies" id="quick-replies">
-                    <button class="quick-reply" onclick="sendQuickReply(this)">I need to file a claim</button>
-                    <button class="quick-reply" onclick="sendQuickReply(this)">What's my policy coverage?</button>
-                    <button class="quick-reply" onclick="sendQuickReply(this)">I want to renew my policy</button>
-                    <button class="quick-reply" onclick="sendQuickReply(this)">Help with a payment</button>
-                </div>
-            </div>
-
-            <div class="chat-input-container">
-                <div class="chat-input-wrapper">
-                    <textarea class="chat-input" id="chat-input" placeholder="Type your message here..." rows="1"></textarea>
-                    <button class="send-button" id="send-button" onclick="sendMessage()">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
-            </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="message bot-message">
+          Hello! I'm your Shield Insurance AI assistant. How can I help you with your insurance needs today?
+          <div class="message-time">Today, 10:00 AM</div>
         </div>
+        <div class="quick-replies" id="quick-replies">
+          <button class="quick-reply" onclick="sendQuickReply(this)">I need to file a claim</button>
+          <button class="quick-reply" onclick="sendQuickReply(this)">What's my policy coverage?</button>
+          <button class="quick-reply" onclick="sendQuickReply(this)">I want to renew my policy</button>
+          <button class="quick-reply" onclick="sendQuickReply(this)">Help with a payment</button>
+        </div>
+      </div>
+
+      <div class="chat-input-container">
+        <div class="chat-input-wrapper">
+          <textarea class="chat-input" id="chat-input" placeholder="Type your message here..." rows="1"></textarea>
+          <button type="button" class="send-button" id="send-button" onclick="sendMessage()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // DOM elements
-     // ------------------ frontend_chat.js ------------------
+  <script>
+    const chatInput = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+    const sendButton = document.getElementById('send-button');
+    const quickReplies = document.getElementById('quick-replies');
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
 
-// DOM elements
-const chatInput = document.getElementById('chat-input');
-const chatMessages = document.getElementById('chat-messages');
-const sendButton = document.getElementById('send-button');
-const quickReplies = document.getElementById('quick-replies');
+    let threadId = localStorage.getItem("draft_thread_id");
+    if (!threadId) {
+      threadId = crypto.randomUUID();
+      localStorage.setItem("draft_thread_id", threadId);
+    }
 
-// Generate or load thread_id from localStorage
-let threadId = localStorage.getItem("draft_thread_id");
-if (!threadId) {
-    threadId = crypto.randomUUID();
-    localStorage.setItem("draft_thread_id", threadId);
-}
+    let userId = localStorage.getItem("user_id");
+    if (!userId) {
+      userId = crypto.randomUUID();
+      localStorage.setItem("user_id", userId);
+    }
 
-// Send message to server
-function sendMessage() {
-    const message = chatInput.value.trim();
-    if (message === '') return;
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) enableDarkMode();
+    themeToggle.addEventListener('click', toggleTheme);
 
-    addMessage(message, 'user');
-    chatInput.value = '';
-    chatInput.style.height = 'auto';
-    quickReplies.style.display = 'none';
+    function toggleTheme() {
+      body.classList.toggle('dark-mode');
+      const isDark = body.classList.contains('dark-mode');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    }
 
-    showTypingIndicator();
-
-    fetch('http://localhost:4000/ask', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            query: message,
-            thread_id: threadId
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        removeTypingIndicator();
-        if (data.response) {
-            addMessage(data.response, 'bot');
-        } else {
-            addMessage("Sorry, no response from server.", 'bot');
-        }
-    })
-    .catch(err => {
-        removeTypingIndicator();
-        console.error('Fetch error:', err);
-        addMessage("❌ Error connecting to server.", 'bot');
+    chatInput.addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = (this.scrollHeight) + 'px';
     });
-}
 
-function sendQuickReply(element) {
-    const message = element.textContent;
-    chatInput.value = message;
-    sendMessage();
-}
+    chatInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
 
-function addMessage(text, sender) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${sender}-message`;
+    function sendMessage() {
+      const message = chatInput.value.trim();
+      if (message === '') return;
 
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      addMessage(message, 'user');
+      chatInput.value = '';
+      chatInput.style.height = 'auto';
+      showTypingIndicator();
+      quickReplies.style.display = 'none';
 
-    messageDiv.innerHTML = `
+      fetch('http://localhost:4000/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: message,
+          user_id: userId,
+          thread_id: threadId
+        })
+      })
+        .then(res => res.json())
+        .then(data => {
+          removeTypingIndicator();
+          if (data.response) {
+            addMessage(data.response, 'bot');
+            if (data.version) {
+              const versionTag = document.createElement('div');
+              versionTag.className = 'message-time';
+              versionTag.textContent = `🧾 Version: ${data.version}`;
+              chatMessages.appendChild(versionTag);
+            }
+          } else {
+            addMessage("I'm sorry, I couldn't process your request. Please try again.", 'bot');
+          }
+        })
+        .catch(err => {
+          removeTypingIndicator();
+          addMessage("⚠️ Server error. Please try again later.", 'bot');
+          console.error(err);
+        });
+    }
+
+    function sendQuickReply(element) {
+      chatInput.value = element.textContent;
+      sendMessage();
+    }
+
+    function addMessage(text, sender) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${sender}-message`;
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      messageDiv.innerHTML = `
         ${text}
         <div class="message-time">Today, ${time}</div>
-    `;
+      `;
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function showTypingIndicator() {
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'typing-indicator';
-    typingDiv.id = 'typing-indicator';
-    typingDiv.innerHTML = `
+    function showTypingIndicator() {
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'typing-indicator';
+      typingDiv.id = 'typing-indicator';
+      typingDiv.innerHTML = `
         <div class="typing-dot"></div>
         <div class="typing-dot"></div>
         <div class="typing-dot"></div>
-    `;
-    chatMessages.appendChild(typingDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+      `;
+      chatMessages.appendChild(typingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
-function removeTypingIndicator() {
-    const typingIndicator = document.getElementById('typing-indicator');
-    if (typingIndicator) typingIndicator.remove();
-}
+    function removeTypingIndicator() {
+      const typingIndicator = document.getElementById('typing-indicator');
+      if (typingIndicator) typingIndicator.remove();
+    }
 
-
-        // Initial welcome message
-        setTimeout(() => {
-            addMessage("I can help you with policy information, claims, renewals, and any other insurance-related questions. What would you like to know?", 'bot');
-        }, 1500);
-    </script>
+    function enableDarkMode() {
+      body.classList.add('dark-mode');
+      themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+    }
+  </script>
 </body>
 </html>
